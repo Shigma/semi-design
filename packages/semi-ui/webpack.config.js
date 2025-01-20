@@ -4,7 +4,7 @@ const TerserPlugin = require('terser-webpack-plugin');
 const DefinePlugin = webpack.DefinePlugin;
 const CaseSensitivePathsPlugin = require('case-sensitive-paths-webpack-plugin');
 const WebpackBarPlugin = require('webpackbar');
-const HashedModuleIdsPlugin = webpack.HashedModuleIdsPlugin;
+const HashedModuleIdsPlugin = webpack.ids.HashedModuleIdsPlugin;
 const getBabelConfig = require('./getBabelConfig');
 
 const rootPath = path.join(__dirname, '../..');
@@ -22,13 +22,16 @@ module.exports = function ({ minimize }) {
             library: 'SemiUI',
             libraryTarget: 'umd'
         },
+        
         module: {
             rules: [
                 {
                     test: /\.tsx?$/,
                     include: [
                         path.join(rootPath, 'packages/semi-ui'),
-                        path.join(rootPath, 'packages/semi-foundation')
+                        path.join(rootPath, 'packages/semi-foundation'),
+                        path.join(rootPath, 'packages/semi-animation'),
+                        path.join(rootPath, 'packages/semi-animation-react')
                     ],
                     use: [
                         {
@@ -45,11 +48,11 @@ module.exports = function ({ minimize }) {
                         }
                     ]
                 },
-                { 
+                {
                     test: /semi-icons\/.+\.css$/,
-                    loaders: 'null-loader'
+                    use: 'null-loader'
                 },
-                { test: /\.scss$/, loaders: 'null-loader' },
+                { test: /\.scss$/, use: 'null-loader' },
             ]
         },
         optimization: {
@@ -66,7 +69,14 @@ module.exports = function ({ minimize }) {
             new HashedModuleIdsPlugin()
         ],
         resolve: {
-            extensions: ['.ts', '.tsx', '.js', '.jsx', '.json']
+            extensions: ['.ts', '.tsx', '.js', '.jsx', '.json'],
+            alias: {
+                "@douyinfe/semi-foundation": path.resolve(__dirname, "../semi-foundation"),
+                "@douyinfe/semi-icons": path.resolve(__dirname, "../semi-icons"),
+                "@douyinfe/semi-illustrations": path.resolve(__dirname, "../semi-illustrations"),
+                "@douyinfe/semi-animation": path.resolve(__dirname, "../semi-animation"),
+                "@douyinfe/semi-animation-react": path.resolve(__dirname, "../semi-animation-react")
+            },
         },
         externals: {
             react: {

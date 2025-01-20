@@ -1,6 +1,6 @@
 ---
 localeCode: zh-CN
-order: 45
+order: 59
 category: 展示类
 title: Calendar 日历
 icon: doc-calendar
@@ -49,6 +49,35 @@ import { Calendar } from '@douyinfe/semi-ui';
 () => <Calendar mode="month"></Calendar>;
 ```
 
+### 设置周起始日
+可以通过 weekStartsOn 设置周几作为每周第一天，0 代表周日，1 代表周一，以此类推。默认为周日。weekStartsOn 自 v2.18 起提供，对月视图、周视图生效。
+```jsx live=true dir="column"
+import React, { useState } from 'react';
+import { RadioGroup, Calendar, Radio } from '@douyinfe/semi-ui';
+
+() => {
+    const [v, setV] = useState(0);
+    return (
+        <div>
+            <RadioGroup defaultValue={v} aria-label="周起始日" type="button" name="demo-radio-group-vertical" onChange={e => setV(e.target.value)}>
+                <Radio value={0}>周日</Radio>
+                <Radio value={1}>周一</Radio>
+                <Radio value={2}>周二</Radio>
+                <Radio value={3}>周三</Radio>
+                <Radio value={4}>周四</Radio>
+                <Radio value={5}>周五</Radio>
+                <Radio value={6}>周六</Radio>
+            </RadioGroup>
+            <Calendar
+                style={{ marginTop: 20 }}
+                mode="month"
+                weekStartsOn={v}
+            ></Calendar>
+        </div>
+    );
+};
+```
+
 ### 多日视图
 
 **>=1.5.0**  
@@ -61,19 +90,21 @@ import { Calendar } from '@douyinfe/semi-ui';
 () => <Calendar mode="range" range={[new Date(2020, 8, 26), new Date(2020, 8, 31)]} />;
 ```
 
+
 ### 事件渲染用法
 
 通过 `events` 传入需要渲染的事件，`events` 是一个由 event objects 组成的数组，具体形式请参考 events API。
 
 ```jsx live=true dir="column"
 import React from 'react';
-import { Calendar, RadioGroup, Radio } from '@douyinfe/semi-ui';
+import { Calendar, DatePicker, RadioGroup, Radio } from '@douyinfe/semi-ui';
 
 class Demo extends React.Component {
     constructor() {
         super();
         this.state = {
             mode: 'week',
+            displayValue: new Date(2019, 6, 23, 8, 32, 0),
         };
     }
 
@@ -82,8 +113,15 @@ class Demo extends React.Component {
             mode: e.target.value,
         });
     }
+
+    onChangeDate(e) {
+        this.setState({
+            displayValue: e,
+        });
+    }
+
     render() {
-        const { mode } = this.state;
+        const { mode, displayValue } = this.state;
         const isMonthView = mode === 'month';
         const dailyEventStyle = {
             borderRadius: '3px',
@@ -144,6 +182,7 @@ class Demo extends React.Component {
             {
                 key: '6',
                 start: new Date(2019, 6, 23, 8, 32, 0),
+                end: new Date(2019, 6, 23, 8, 42, 0),
                 children: <div style={dailyStyle}>7月23日 8:32</div>,
             },
             {
@@ -165,10 +204,9 @@ class Demo extends React.Component {
                 children: <div style={allDayStyle}>7月26日 10:00 ~ 7月27日 16:00</div>,
             },
         ];
-        const displayValue = new Date(2019, 6, 23, 8, 32, 0);
         return (
             <>
-                <RadioGroup onChange={e => this.onSelect(e)} value={mode}>
+                <RadioGroup onChange={e => this.onSelect(e)} value={mode} type="button">
                     <Radio value={'day'}>日视图</Radio>
                     <Radio value={'week'}>周视图</Radio>
                     <Radio value={'month'}>月视图</Radio>
@@ -176,11 +214,15 @@ class Demo extends React.Component {
                 </RadioGroup>
                 <br />
                 <br />
+                <DatePicker value={displayValue} onChange={e => this.onChangeDate(e)} />
+                <br />
+                <br />
                 <Calendar
                     height={400}
                     mode={mode}
                     displayValue={displayValue}
                     events={events}
+                    minEventHeight={40}
                     range={mode === 'range' ? [new Date(2019, 6, 23), new Date(2019, 6, 26)] : []}
                 ></Calendar>
             </>
@@ -258,6 +300,28 @@ import { Calendar } from '@douyinfe/semi-ui';
 };
 ```
 
+#### 自定义日期文案
+
+可以通过 renderDateDisplay 自定义日期文案。
+
+
+```jsx live=true dir="column"
+import React from 'react';
+import { Avatar, Calendar } from '@douyinfe/semi-ui';
+
+() => {
+    const displayValue = new Date(2023, 4, 14);
+
+    const renderDateDisplay = date => {
+        const colors = ["amber", "blue", "cyan", "green", "grey", "indigo", "lime"];
+        return <div><Avatar color={colors[date.getDay()]} size="small">{date.getDate()}</Avatar></div>;
+    };
+
+    return <Calendar height={400} mode="week" displayValue={displayValue} renderDateDisplay={renderDateDisplay} />;
+};
+```
+
+
 ## API 参考
 
 ### Calendar
@@ -265,19 +329,23 @@ import { Calendar } from '@douyinfe/semi-ui';
 | 属性 | 说明 | 类型 | 默认值 |
 | --- | --- | --- | --- |
 | dateGridRender | 自定义单元格/列渲染，需要绝对定位, **v>=1.0.0** | function(dateString: string, date: Date) | - |
+| allDayEventsRender | 自定义日/多日/周视图下的顶部事件渲染 | function(events: EventObject[]): ReactNode | - |
 | displayValue | 展示日期 | Date | 当前日期 |
 | events | 渲染事件，具体格式请参考 event object | EventObject[] | - |
 | header | 自定义头部内容 | ReactNode | - |
 | height | 日历高度 | string\|number | 600 |
 | markWeekend | 区分周末列和工作日，以灰色显示 | boolean | false |
+| minEventHeight | 日视图、多日视图以及周视图下事件的最小高度(**>=2.49.0**) | number | Number.MIN_SAFE_INTEGER |
 | mode | 初始模式，`day`, `week`, `month`, `range`(**>=1.5.0**) | "day" \| "week" \| "month" \| "range" | `week` |
 | onClick | 单击日期格的回调，日视图和周视图以半小时为单位，月视图以日为单位 | function(e: Event, date: Date） | - |
 | onClose | 月视图下，展示所有 event 的卡片关闭时的回调 | function(e: Event） | - |
 | range | 多日视图模式下展示的日期范围，左闭右开 **v>=1.5.0** | Date[] | - |
 | renderTimeDisplay | 自定义日/周视图下的时间文案 | function(time: number): ReactNode | - |
+| renderDateDisplay | 自定义日期文案 | function(date: Date): ReactNode | - |
 | scrollTop | 日视图和周视图模式下，设置展示内容默认的滚动高度 | number | 400 |
 | showCurrTime | 显示当前时间 | boolean | true |
 | width | 日历宽度 | string\|number | - |
+| weekStartsOn | 以周几作为每周第一天，0 代表周日，1 代表周一，以此类推。v2.18后支持 | number | 0 |
 
 ### Event Object
 
@@ -295,6 +363,11 @@ import { Calendar } from '@douyinfe/semi-ui';
 | end      | 事情结束的时间                    | Date | -      |
 | key      | required 且要求唯一, **v>=1.0.0** | string      | -      |
 | start    | 事情起始的时间                    | Date | -      |
+
+## 文案规范
+- 当需要显示时间时，12 小时制和 24 小时制都是可以使用的
+- 如果采用12小时制，需要搭配 AM/PM 一起使用，具体内容可参考 [时间规范](/zh-CN/start/content-guidelines#8.%20%E6%97%A5%E6%9C%9F%E4%B8%8E%E6%97%B6%E9%97%B4)
+- 关于月份、星期、时间的缩写使用规则，可参考 [缩写规范](/zh-CN/start/content-guidelines#1.%20%E7%BC%A9%E5%86%99)
 
 ## 设计变量
 

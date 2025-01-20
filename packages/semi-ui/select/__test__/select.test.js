@@ -5,6 +5,7 @@ const OptGroup = Select.OptGroup;
 import { IconClear, IconChevronDown } from '@douyinfe/semi-icons';
 import { BASE_CLASS_PREFIX } from '../../../semi-foundation/base/constants';
 import keyCode from '../../../semi-foundation/utils/keyCode';
+import {sleep} from "../../_test_/utils";
 
 const defaultList = [
     { value: 'abc', label: 'Abc' },
@@ -20,7 +21,7 @@ function getOption(list = defaultList) {
 let commonProps = {
     // Select use Popup Layer to show candidate option,
     // but all Popup Layer which extends from Tooltip (eg Popover, Dropdown) have animation and delay.
-    // Turn off animation and delay during testing, to avoid wating (something like setTimeOut/balabala...) in the test code
+    // Turn off animation and delay during testing, to avoid waiting (something like setTimeOut/balabala...) in the test code
     motion: false,
     mouseEnterDelay: 0,
     mouseLeaveDelay: 0,
@@ -368,7 +369,7 @@ describe('Select', () => {
     });
 
     it('innerTopSlot', () => {
-        let innerTopSlot = <div class="inner-slot">inner</div>;
+        let innerTopSlot = <div className="inner-slot">inner</div>;
         let props = {
             innerTopSlot: innerTopSlot,
             defaultOpen: true,
@@ -378,7 +379,7 @@ describe('Select', () => {
     });
 
     it('outerTopSlot', () => {
-        let outerTopSlot = <div class="outer-slot">outer</div>;
+        let outerTopSlot = <div className="outer-slot">outer</div>;
         let props = {
             outerTopSlot: outerTopSlot,
             defaultOpen: true,
@@ -389,7 +390,7 @@ describe('Select', () => {
 
     // TODO
     it('innerBottomSlot', () => {
-        let innerBottomSlot = <div class="inner-slot">inner</div>;
+        let innerBottomSlot = <div className="inner-slot">inner</div>;
         let props = {
             innerBottomSlot: innerBottomSlot,
             defaultOpen: true,
@@ -399,7 +400,7 @@ describe('Select', () => {
     });
 
     it('outerBottomSlot', () => {
-        let outerBottomSlot = <div class="outer-slot">outer</div>;
+        let outerBottomSlot = <div className="outer-slot">outer</div>;
         let props = {
             outerBottomSlot: outerBottomSlot,
             defaultOpen: true,
@@ -467,24 +468,27 @@ describe('Select', () => {
         const props = { disabled: true };
         const select = getSelect(props);
         expect(select.exists(`.${BASE_CLASS_PREFIX}-select-disabled`)).toEqual(true);
-        // Does not respond click events when disbaled is true
+        // Does not respond click events when disabled is true
         select.find(`.${BASE_CLASS_PREFIX}-select`).simulate('click', {});
         expect(select.exists(`.${BASE_CLASS_PREFIX}-select-option-list`)).toEqual(false);
     });
 
-    it('onDropdownVisibleChange & clickToHide', () => {
+    it('onDropdownVisibleChange & clickToHide', async () => {
         let onDropdownVisible = () => {};
         let spyOnDV = sinon.spy(onDropdownVisible);
         const props = {
             onDropdownVisibleChange: spyOnDV,
             clickToHide: true,
+            motion: false
         };
         const select = getSelect(props);
         select.find(`.${BASE_CLASS_PREFIX}-select`).simulate('click', {});
+        await sleep(1000);
         expect(select.exists(`.${BASE_CLASS_PREFIX}-select-option-list`)).toEqual(true);
         expect(spyOnDV.calledOnce).toEqual(true);
         expect(spyOnDV.calledWithMatch(true)).toEqual(true);
         select.find(`.${BASE_CLASS_PREFIX}-select`).simulate('click', {});
+        await sleep(1000);
         expect(select.exists(`.${BASE_CLASS_PREFIX}-select-option-list`)).toEqual(false);
         expect(spyOnDV.calledWithMatch(false)).toEqual(true);
     });
@@ -556,12 +560,6 @@ describe('Select', () => {
         select.unmount();
         // when click clear button, should trigger onSearch
         // TODO
-        let scProps = {
-            showClear: true,
-            filter: true,
-            defaultValue: 'tikok',
-        };
-        const scSelect = getSelect(props);
     });
 
     it('emptyContent', () => {
@@ -718,7 +716,7 @@ describe('Select', () => {
     });
 
     it('onDeselect', () => {
-        // trigger onDeselect when option is deselectd
+        // trigger onDeselect when option is deselected
         let onDeselect = (value, option) => {};
         let spyOnDeselect = sinon.spy(onDeselect);
         let props = {
@@ -916,7 +914,7 @@ describe('Select', () => {
     });
 
     it('【autoFocus】 & onBlur when autoFocus = true', () => {
-        // autoFocus should trigger onBlur when click ohter element directly （dropdown not open）
+        // autoFocus should trigger onBlur when click other element directly （dropdown not open）
         let spyOnBlur = sinon.spy((value, option) => {
         });
         let props = {
@@ -936,7 +934,7 @@ describe('Select', () => {
         expect(spyOnBlur.callCount).toEqual(1);
     });
 
-    it('vitrual', () => {
+    it('virtual', () => {
         let spyOnChange = sinon.spy((value) => {
         });
         let optionList = Array.from({ length: 100 }, (v, i) => ({ label: `option-${i}`, value: i }));
@@ -1048,7 +1046,7 @@ describe('Select', () => {
     it('customTrigger', () => {
         const triggerRender = ({ value, ...rest }) => {
             return (
-              <div className="custom-triger">
+              <div className="custom-trigger">
                 trigger
               </div>
             );
@@ -1057,7 +1055,7 @@ describe('Select', () => {
             triggerRender,
         };
         let select = getSelect(props);
-        let trigger = select.find('.custom-triger');
+        let trigger = select.find('.custom-trigger');
         expect(trigger.length).toEqual(1);
         expect(trigger.at(0).text()).toEqual('trigger');
         trigger.at(0).simulate('click')
@@ -1186,7 +1184,7 @@ describe('Select', () => {
         expect(singleSelect.state().selections.size).toEqual(0);
     });
 
-    it('props optionList update after choose some option, uncontroled mode', () => {
+    it('props optionList update after choose some option, uncontrolled mode', () => {
 
         let props = {
             defaultActiveFirstOption: true,
@@ -1234,7 +1232,7 @@ describe('Select', () => {
         expect(selections2[0][0]).toEqual('abc');
     });
 
-    it('click tag close when multiple, controled mode', () => {
+    it('click tag close when multiple, controlled mode', () => {
         let spyOnChange = sinon.spy((value) => {
         });
         let spyOnDeselect = sinon.spy((option) => {
@@ -1303,8 +1301,8 @@ describe('Select', () => {
         expect(inputValue).toEqual(keyword);
     });
     // TODO ref selectAll \deselectAll when onChangeWithObject is true
-    // TODO when loading is true, do not response any keyborard event
-    // TODO can't remove tag when option is diabled
+    // TODO when loading is true, do not response any keyboard event
+    // TODO can't remove tag when option is disabled
     // it('allowCreate-renderCreateItem', ()=>{})
     // it('autoAdjustOverflow', ()=>{})
     // it('remote', ()=>{})

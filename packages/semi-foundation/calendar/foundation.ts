@@ -31,10 +31,11 @@ import {
     filterEvents,
     parseRangeAllDayEvent,
     DateObj,
-    checkWeekend
+    checkWeekend,
 } from './eventUtil';
+import type { weekStartsOnEnum } from './eventUtil';
 
-
+export { weekStartsOnEnum };
 export interface EventObject {
     [x: string]: any;
     key: string;
@@ -42,38 +43,38 @@ export interface EventObject {
     start?: Date;
     end?: Date;
     // children?: React.ReactNode;
-    children?: any;
+    children?: any
 }
 
 export interface ParsedEventsWithArray {
     day: Array<any>;
-    allDay: Array<any>;
+    allDay: Array<any>
 }
 
 export interface ParsedEvents {
     day?: Map<string, Array<EventObject>>;
-    allDay?: Map<string, Array<EventObject>>;
+    allDay?: Map<string, Array<EventObject>>
 }
 
 export interface ParsedRangeEvent extends EventObject {
     leftPos?: number;
     width?: number;
-    topInd?: number;
+    topInd?: number
 }
 
 export interface MonthlyEvent {
     day: ParsedRangeEvent[][];
-    display: ParsedRangeEvent[];
+    display: ParsedRangeEvent[]
 }
 
 export interface RangeData {
     month: string;
-    week: any[];
+    week: any[]
 }
 
 export interface WeeklyData {
     month: string;
-    week: DateObj[];
+    week: DateObj[]
 }
 
 export type MonthData = Record<number, DateObj[]>;
@@ -102,7 +103,7 @@ export interface CalendarAdapter<P = Record<string, any>, S = Record<string, any
     getMonthlyData?: () => MonthData;
     notifyClose?: (e: any, key: string) => void;
     openCard?: (key: string, spacing: boolean) => void;
-    setItemLimit?: (itemLimit: number) => void;
+    setItemLimit?: (itemLimit: number) => void
 }
 
 export default class CalendarFoundation<P = Record<string, any>, S = Record<string, any>> extends BaseFoundation<CalendarAdapter<P, S>, P, S> {
@@ -113,7 +114,6 @@ export default class CalendarFoundation<P = Record<string, any>, S = Record<stri
         super({ ...adapter });
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
     init() {
 
     }
@@ -188,18 +188,20 @@ export default class CalendarFoundation<P = Record<string, any>, S = Record<stri
 
     getWeeklyData(value: Date, dateFnsLocale: Locale) {
         const data = {} as WeeklyData;
-        data.month = format(value, 'LLL', { locale: dateFnsLocale });
-        data.week = calcWeekData(value, 'week', dateFnsLocale);
+        const { weekStartsOn } = this.getProps();
+        data.month = format(value, 'LLL', { locale: dateFnsLocale, weekStartsOn });
+        data.week = calcWeekData(value, null, 'week', dateFnsLocale, weekStartsOn);
         this._adapter.setWeeklyData(data);
         return data;
     }
 
     getRangeData(value: Date, dateFnsLocale: Locale) {
         const data = {} as { month: string; week: Array<DateObj> };
-        const { range } = this.getProps();
+        const { range, weekStartsOn } = this.getProps();
         const len = differenceInCalendarDays(range[1], range[0]);
-        data.month = format(value, 'LLL', { locale: dateFnsLocale });
-        data.week = calcRangeData(value, range[0], len, 'week', dateFnsLocale);
+        data.month = format(value, 'LLL', { locale: dateFnsLocale, weekStartsOn });
+        const startDate = startOfDay(range[0]);
+        data.week = calcRangeData(value, startDate, len, 'week', dateFnsLocale, weekStartsOn);
         this._adapter.setRangeData(data);
         return data;
     }
@@ -207,9 +209,10 @@ export default class CalendarFoundation<P = Record<string, any>, S = Record<stri
     getMonthlyData(value: Date, dateFnsLocale: Locale) {
         const monthStart = startOfMonth(value);
         const data = {} as MonthData;
-        const numberOfWeek = getWeeksInMonth(value);
+        const { weekStartsOn } = this.getProps();
+        const numberOfWeek = getWeeksInMonth(value, { weekStartsOn });
         [...Array(numberOfWeek).keys()].map(ind => {
-            data[ind] = calcWeekData(addDays(monthStart, ind * 7), 'month', dateFnsLocale);
+            data[ind] = calcWeekData(addDays(monthStart, ind * 7), monthStart, 'month', dateFnsLocale, weekStartsOn);
         });
         this._adapter.setMonthlyData(data);
         return data;
@@ -245,7 +248,27 @@ export default class CalendarFoundation<P = Record<string, any>, S = Record<stri
         if (!parsed.day) {
             parsed.day = [];
         }
+
         parsed.day = parsed.day.map(item => renderDailyEvent(item));
+        // 将 startPos & endPos 完全相同的事件编为一组
+        const sameTimeRangeGroup = parsed.day.reduce((acc, item) => {
+            const key = `${item.startPos}-${item.endPos}`;
+            if (!acc[key]) {
+                acc[key] = [];
+            }
+            acc[key].push(item);
+            return acc;
+        }, {});
+
+        // 计算每个 item 的 left 值， 
+        const eventCountMap = {};
+        parsed.day = parsed.day.map(item => {
+            const key = `${item.startPos}-${item.endPos}`;
+            let curCount = eventCountMap[key];
+            eventCountMap[key] = curCount === undefined ? 0 : ++curCount;
+            item.left = curCount !== 0 ? `${(curCount / sameTimeRangeGroup[key].length * 100)}%` : 0;
+            return item;
+        });
         return parsed;
     }
 
@@ -259,12 +282,13 @@ export default class CalendarFoundation<P = Record<string, any>, S = Record<stri
     // ================== Weekly Event ==================
 
     _parseWeeklyEvents(events: ParsedEvents['allDay'], weekStart: Date) {
+        const { weekStartsOn } = this.getProps();
         let parsed = [[]] as ParsedRangeEvent[][];
-        const filtered = filterWeeklyEvents(events, weekStart);
+        const filtered = filterWeeklyEvents(events, weekStart, weekStartsOn);
         [...filtered.keys()].sort((a, b) => sortDate(a, b)).forEach(item => {
             const startDate = new Date(item);
             const curr = filtered.get(item).filter(event => isSameDay(event.date, startDate));
-            parsed = parseWeeklyAllDayEvent(curr, startDate, weekStart, parsed);
+            parsed = parseWeeklyAllDayEvent(curr, startDate, weekStart, parsed, weekStartsOn);
         });
         return parsed;
     }
@@ -316,19 +340,19 @@ export default class CalendarFoundation<P = Record<string, any>, S = Record<stri
 
     convertMapToArray(weekMap: Map<string, EventObject[]>, weekStart: Date) {
         const eventArray = [];
+        const map = new Map();
         for (const entry of weekMap.entries()) {
             const [key, value] = entry;
-            const map = new Map();
             map.set(key, value);
-            const weekEvents = this._parseWeeklyEvents(map, weekStart);
-            eventArray.push(...weekEvents);
         }
+        const weekEvents = this._parseWeeklyEvents(map, weekStart);
+        eventArray.push(...weekEvents);
         return eventArray;
     }
 
     getParseMonthlyEvents(itemLimit: number) {
         const parsed: any = {};
-        const { displayValue, events } = this.getProps();
+        const { displayValue, events, weekStartsOn } = this.getProps();
         const currDate = this._getDate();
         const firstDayOfMonth = startOfMonth(displayValue);
         const lastDayOfMonth = endOfMonth(displayValue);
@@ -350,31 +374,30 @@ export default class CalendarFoundation<P = Record<string, any>, S = Record<stri
             // WeekInd calculation error, need to consider the boundary situation at the beginning/end of the month
             // When the date falls within the month
             if (isSameMonth(item.date, displayValue)) {
-                const weekInd = getWeekOfMonth(item.date) - 1;
+                const weekInd = getWeekOfMonth(item.date, { weekStartsOn }) - 1;
                 this.pushDayEventIntoWeekMap(item, weekInd, parsed);
                 return;
             }
             // When the date is within the previous month
             if (isBefore(item.date, firstDayOfMonth)) {
-                if (isSameWeek(item.date, firstDayOfMonth)) {
+                if (isSameWeek(item.date, firstDayOfMonth, { weekStartsOn })) {
                     this.pushDayEventIntoWeekMap(item, 0, parsed);
                 }
                 return;
             }
             // When the date is within the next month
             if (isAfter(item.date, lastDayOfMonth)) {
-                if (isSameWeek(item.date, lastDayOfMonth)) {
-                    const weekInd = getWeekOfMonth(lastDayOfMonth) - 1;
+                if (isSameWeek(item.date, lastDayOfMonth, { weekStartsOn })) {
+                    const weekInd = getWeekOfMonth(lastDayOfMonth, { weekStartsOn }) - 1;
                     this.pushDayEventIntoWeekMap(item, weekInd, parsed);
                 }
                 return;
             }
         });
-
         Object.keys(parsed).forEach(key => {
             const week = parsed[key];
             parsed[key] = {};
-            const weekStart = startOfWeek(week[0].date);
+            const weekStart = startOfWeek(week[0].date, { weekStartsOn });
             const weekMap = convertEventsArrToMap(week, 'start', startOfDay);
             // When there are multiple events in a week, multiple events should be parsed
             // const oldParsedWeeklyEvent = this._parseWeeklyEvents(weekMap, weekStart);

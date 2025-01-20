@@ -25,10 +25,13 @@ class Calendar extends BaseComponent<CalendarProps, {}> {
         })),
         mode: PropTypes.string,
         showCurrTime: PropTypes.bool,
+        weekStartsOn: PropTypes.number,
         scrollTop: PropTypes.number,
         onClick: PropTypes.func,
         renderTimeDisplay: PropTypes.func,
+        renderDateDisplay: PropTypes.func,
         markWeekend: PropTypes.bool,
+        minEventHeight: PropTypes.number,
         width: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
         height: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
         style: PropTypes.object,
@@ -42,7 +45,8 @@ class Calendar extends BaseComponent<CalendarProps, {}> {
         mode: 'week',
         markWeekend: false,
         height: 600,
-        scrollTop: 400
+        scrollTop: 400,
+        weekStartsOn: 0,
     };
 
     render() {
@@ -57,5 +61,5 @@ class Calendar extends BaseComponent<CalendarProps, {}> {
     }
 }
 
-export { EventObject };
+export type { EventObject };
 export default Calendar;

@@ -1,6 +1,6 @@
 ---
 localeCode: zh-CN
-order: 52
+order: 66
 category: 展示类
 title: Empty 空状态
 icon: doc-empty
@@ -29,8 +29,8 @@ import { IllustrationConstruction, IllustrationConstructionDark } from '@douyinf
 
 () => (
     <Empty
-        image={<IllustrationConstruction style={{width: 150, height: 150}} />}
-        darkModeImage={<IllustrationConstructionDark style={{width: 150, height: 150}} />}
+        image={<IllustrationConstruction style={{ width: 150, height: 150 }} />}
+        darkModeImage={<IllustrationConstructionDark style={{ width: 150, height: 150 }} />}
         title={'功能建设中'}
         description="当前功能暂未开放，敬请期待。"
     />
@@ -48,8 +48,8 @@ import { IllustrationNoContent, IllustrationNoContentDark } from '@douyinfe/semi
 
 () => (
     <Empty
-        image={<IllustrationNoContent style={{width: 150, height: 150}} />}
-        darkModeImage={<IllustrationNoContentDark style={{width: 150, height: 150}} />}
+        image={<IllustrationNoContent style={{ width: 150, height: 150 }} />}
+        darkModeImage={<IllustrationNoContentDark style={{ width: 150, height: 150 }} />}
         title="空状态标题"
         description="开始创建你的第一个仪表盘吧！"
     >
@@ -96,8 +96,8 @@ import { IllustrationSuccess, IllustrationSuccessDark } from '@douyinfe/semi-ill
 () => (
     <Empty
         title={'创建成功'}
-        image={<IllustrationSuccess style={{width: 150, height: 150}} />}
-        darkModeImage={<IllustrationSuccessDark style={{width: 150, height: 150}} />}
+        image={<IllustrationSuccess style={{ width: 150, height: 150 }} />}
+        darkModeImage={<IllustrationSuccessDark style={{ width: 150, height: 150 }} />}
         layout="horizontal"
         description="这是一段很长的描述文本，当文本过长的时候推荐使用这种布局形式。这是一段很长的描述文本，当文本过长的时候推荐使用这种布局形式。这是一段很长的描述文本，当文本过长的时候推荐使用这种布局形式。"
         style={{ width: 800, margin: '0 auto' }}
@@ -112,8 +112,6 @@ import { IllustrationSuccess, IllustrationSuccessDark } from '@douyinfe/semi-ill
 ### 占位图插画(建设中)
 
 目前 `@douyinfe/semi-illustrations` 中支持以下插画。
-
-> 由于插画库还在建设中，请随时留意后续可能发生的改变。
 
 ```jsx live=true dir="column"
 import React from 'react';
@@ -187,13 +185,13 @@ import { IllustrationIdle, IllustrationIdleDark, IllustrationConstructionDark, I
 | 属性 | 说明 | 类型 | 默认值 |
 | --- | --- | --- | --- |
 | className | 类名 | string | - |
-| darkModeImage | 暗色模式开启后的占位图，响应 document.body 的 theme-mode 属性变化 **v>=1.13.0** | ReactNode | - |
+| darkModeImage | 暗色模式开启后的占位图，响应 document.body 的 theme-mode 属性变化 | ReactNode | - |
 | description | 内容描述 | ReactNode | - |
 | image | 占位图 | ReactNode \| { id?: string; viewBox?: string; url?: string;} | - |
 | imageStyle | 占位图样式 | CSSProperties | - |
 | layout | 布局方式，支持 `vertical`, `horizontal` | string | `vertical` |
 | style | 样式名 | CSSProperties | - |
-| title | 标题 **v>=1.0.0** | ReactNode | - |
+| title | 标题 | ReactNode | - |
 
 ## Accessibility
 
@@ -201,6 +199,16 @@ import { IllustrationIdle, IllustrationIdleDark, IllustrationConstructionDark, I
 
 - Empty 插图的 aria-hidden 为 true
 
+## 文案规范
+- 标题
+  - 标题应该简洁易懂
+- 正文
+  - 可以展示展示空状态的具体原因，也可以展示后续的操作行为去帮助用户消除空状态
+  - 不要重复标题上的内容
+  - 尽量保持正文在 1-2 句话内
+- 动作按钮
+  - 按钮文案需要足够清晰和容易理解
+  - 使用 动词 + 名词 的格式
 ## 设计变量
 
 <DesignToken/>

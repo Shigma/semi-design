@@ -6,8 +6,11 @@ import { IconCaretup, IconCaretdown } from '@douyinfe/semi-icons';
 
 import { cssClasses, strings } from '@douyinfe/semi-foundation/table/constants';
 
-import { SortOrder } from './interface';
+import { SortIcon, SortOrder, TableLocale } from './interface';
+import Tooltip from '../tooltip';
 import isEnterPress from '@douyinfe/semi-foundation/utils/isEnterPress';
+import { getNextSortOrder } from './utils';
+import LocaleConsumer from '../locale/localeConsumer';
 
 export interface ColumnSorterProps {
     className?: string;
@@ -15,6 +18,9 @@ export interface ColumnSorterProps {
     onClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
     prefixCls?: string;
     sortOrder?: SortOrder;
+    title?: React.ReactNode;
+    sortIcon?: SortIcon;
+    showTooltip?: boolean
 }
 
 export default class ColumnSorter extends PureComponent<ColumnSorterProps> {
@@ -24,18 +30,21 @@ export default class ColumnSorter extends PureComponent<ColumnSorterProps> {
         onClick: PropTypes.func,
         prefixCls: PropTypes.string,
         sortOrder: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
+        sortIcon: PropTypes.func,
+        showTooltip: PropTypes.bool,
     };
 
     static defaultProps = {
         prefixCls: cssClasses.PREFIX,
         onClick: noop,
         sortOrder: false,
+        showTooltip: false
     };
 
     render() {
-        const { prefixCls, onClick, sortOrder, style } = this.props;
+        const { prefixCls, onClick, sortOrder, style, title, sortIcon, showTooltip } = this.props;
 
-        const iconBtnSize = 'small';
+        const iconBtnSize = 'default';
 
         const upCls = cls(`${prefixCls}-column-sorter-up`, {
             on: sortOrder === strings.SORT_DIRECTIONS[0],
@@ -53,22 +62,45 @@ export default class ColumnSorter extends PureComponent<ColumnSorterProps> {
             'aria-roledescription': 'Sort data with this column',
         };
 
+        const renderSortIcon = () => {
+            if (typeof sortIcon === 'function') {
+                return sortIcon({ sortOrder });
+            } else {
+                const node = (<div style={style} className={`${prefixCls}-column-sorter`}>
+                    <span className={`${upCls}`}>
+                        <IconCaretup size={iconBtnSize} />
+                    </span>
+                    <span className={`${downCls}`}>
+                        <IconCaretdown size={iconBtnSize} />
+                    </span>
+                </div>);
+                if (showTooltip) {
+                    let content = getNextSortOrder(sortOrder);
+                    return (<LocaleConsumer 
+                        componentName="Table" 
+                    >
+                        {(locale: TableLocale, localeCode: string) => (
+                            <Tooltip content={locale[content]}>
+                                {node}
+                            </Tooltip>
+                        )}
+                    </LocaleConsumer>);
+                }
+                return node;
+            }
+        };
+
         return (
             <div
-                role='button'
+                role="button"
                 {...ariaProps}
                 tabIndex={-1}
-                style={style}
-                className={`${prefixCls}-column-sorter`}
+                className={`${prefixCls}-column-sorter-wrapper`}
                 onClick={onClick}
                 onKeyPress={e => isEnterPress(e) && onClick(e as any)}
             >
-                <span className={`${upCls}`}>
-                    <IconCaretup size={iconBtnSize} />
-                </span>
-                <span className={`${downCls}`}>
-                    <IconCaretdown size={iconBtnSize} />
-                </span>
+                {title}
+                {renderSortIcon()}
             </div>
         );
     }

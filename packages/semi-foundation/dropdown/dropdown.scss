@@ -1,4 +1,5 @@
 //@import '../theme/variables.scss';
+@import './animation.scss';
 @import './variables.scss';
 
 $module: #{$prefix}-dropdown;
@@ -6,15 +7,16 @@ $module: #{$prefix}-dropdown;
 .#{$module} {
     @include font-size-regular;
     &-wrapper {
+        overflow-y:auto; // prevent flow out of the radius limit area
         @include shadow-elevated;
         position: relative;
         z-index: $z-dropdown;
         border-radius: $radius-dropdown;
         background: $color-dropdown-bg-default;
-        visibility: hidden;
+        opacity: 0;
         // min-width: 150px;
         &-show {
-            visibility: visible;
+            opacity: 1;
         }
     }
     &-trigger {
@@ -31,11 +33,12 @@ $module: #{$prefix}-dropdown;
         padding-bottom: $spacing-dropdown_title-paddingBottom;
         padding-left: $spacing-dropdown_title-paddingLeft;
         padding-right: $spacing-dropdown_title-paddingRight;
+        @include font-size-small;
+        cursor: default;
+        
         &-withTick {
             padding-left: $spacing-dropdown_title_withTick-paddingLeft;
         }
-        @include font-size-small;
-        cursor: default;
     }
     &-item {
         padding: $spacing-dropdown_item-paddingY $spacing-dropdown_item-paddingX;
@@ -43,6 +46,13 @@ $module: #{$prefix}-dropdown;
         max-width: $width-dropdown;
         display: flex;
         align-items: center;
+        transition: background-color $transition_duration-dropdown_item-bg $transition_function-dropdown_item-bg
+            $transition_delay-dropdown_item-bg;
+
+        &-hover {
+            background-color: $color-dropdown_item-bg-hover;
+        }
+
         &:not(.#{$module}-item-active):hover {
             background-color: $color-dropdown_item-bg-hover;
             cursor: pointer;

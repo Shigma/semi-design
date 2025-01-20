@@ -1,6 +1,6 @@
 ---
 localeCode: en-US
-order: 60
+order: 77
 category: Show
 title: Tag
 subTitle: Tag
@@ -45,15 +45,29 @@ Supports two sizes: `large` and `small` (default).
 
 ```jsx live=true
 import React from 'react';
-import { Tag } from '@douyinfe/semi-ui';
+import { Tag, Space } from '@douyinfe/semi-ui';
 
 () => (
-    <div>
-        <Tag size="small" style={{ marginRight: 8 }}>
-            small tag
-        </Tag>
-        <Tag size="large"> large tag </Tag>
-    </div>
+    <Space>
+        <Tag size="small" color='light-blue'> small tag </Tag>
+        <Tag size="large" color='cyan'> large tag </Tag>
+    </Space>
+);
+```
+
+### Shape
+
+Supports two Shape: `square`（default）、`circle`。
+
+```jsx live=true
+import React from 'react';
+import { Tag, Space } from '@douyinfe/semi-ui';
+
+() => (
+    <Space>
+        <Tag size="small" shape='circle' color='amber'> small circle tag </Tag>
+        <Tag size="large" shape='circle' color='violet'> large circle tag </Tag>
+    </Space>
 );
 ```
 
@@ -68,30 +82,12 @@ import { Tag, Space } from '@douyinfe/semi-ui';
 () => {
     return (
         <Space wrap>
-            <Tag color="grey" >
-                grey tag
-            </Tag>
-            <Tag color="blue" >
-                blue tag
-            </Tag>
-            <Tag color="red" >
-                red tag
-            </Tag>
-            <Tag color="green" >
-                green tag
-            </Tag>
-            <Tag color="orange" >
-                orange tag
-            </Tag>
-            <Tag color="teal" >
-                teal tag
-            </Tag>
-            <Tag color="violet" >
-                violet tag
-            </Tag>
-            <Tag color="white" >
-                white tag
-            </Tag>
+            {
+                ['amber', 'blue', 'cyan', 'green', 'grey', 'indigo',  
+                    'light-blue', 'light-green', 'lime', 'orange', 'pink',  
+                    'purple', 'red', 'teal', 'violet', 'yellow', 'white'
+                ].map(item => (<Tag color={item} key={item}> {item} </Tag>))
+            }
         </Space>
     );
 };
@@ -104,18 +100,61 @@ Tag supports three different types, including: `light`(default), `ghost`, `solid
 ```jsx live=true
 import React from 'react';
 import { Tag, Space } from '@douyinfe/semi-ui';
+import { IconGithubLogo, IconSemiLogo } from '@douyinfe/semi-icons';
 
 () => (
-    <Space>
-        <Tag color="blue" type="light">
-            light tag
+    <Space wrap>
+        <Tag
+            color='light-blue'
+            prefixIcon={<IconGithubLogo />}
+            size='large'
+            shape='circle'
+            type='light'
+        >
+            Semi Design Light Tag
         </Tag>
-        <Tag color="blue" type="ghost">
-            ghost tag
+        <Tag
+            color='cyan'
+            size='large'
+            shape='circle'
+            suffixIcon={<IconSemiLogo />}
+            type='light'
+        >
+            D2C: figma to code in one click</Tag>
+        <Tag
+            color='light-blue'
+            prefixIcon={<IconGithubLogo />}
+            size='large'
+            shape='circle'
+            type='ghost'
+        >
+            Semi Design Ghost Tag
         </Tag>
-        <Tag color="blue" type="solid">
-            solid tag
+        <Tag
+            color='cyan'
+            size='large'
+            shape='circle'
+            type='ghost'
+            suffixIcon={<IconSemiLogo />}
+        >
+            D2C: figma to code in one click</Tag>
+        <Tag
+            color='light-blue'
+            prefixIcon={<IconGithubLogo />}
+            size='large'
+            shape='circle'
+            type='solid'
+        >
+            Semi Design Solid Tag
         </Tag>
+        <Tag
+            color='cyan'
+            size='large'
+            shape='circle'
+            type='solid'
+            suffixIcon={<IconSemiLogo />}
+        >
+            D2C: figma to code in one click</Tag>
     </Space>
 );
 ```
@@ -160,7 +199,7 @@ You can use `visible` property to control whether the tag is visible.
 
 ```jsx live=true
 import React, { useState } from 'react';
-import { Tag, Button } from '@douyinfe/semi-ui';
+import { Tag, Button, RadioGroup, Radio } from '@douyinfe/semi-ui';
 
 () => {
     const [visible, setVisible] = useState(false);
@@ -169,13 +208,17 @@ import { Tag, Button } from '@douyinfe/semi-ui';
     };
     return (
         <div>
-            <Button onClick={toggleVisible}>{visible ? 'Hide Tag' : 'Show Tag'}</Button>
+            <RadioGroup type='button' defaultValue={0} onChange={e => toggleVisible(e.target.value)}>
+                <Radio value={1}>Show</Radio>
+                <Radio value={0}>Hide</Radio>
+            </RadioGroup>
             <div style={{ marginTop: 10 }}>
-                <Tag visible={visible}>Invisible tag </Tag>
+                <Tag visible={visible} size='large' color='light-blue'>Invisible tag </Tag>
             </div>
         </div>
     );
 };
+
 ```
 
 ### TagGroup
@@ -243,6 +286,55 @@ import { TagGroup } from '@douyinfe/semi-ui';
 };
 ```
 
+If the tags in the TagGroup can be deleted, the user needs to process the `tagList` passed to the TagGroup in `onTagClose`
+
+```jsx live=true
+import React, { useState } from 'react';
+import { TagGroup } from '@douyinfe/semi-ui';
+
+() => {
+    const defaultList = [
+        { tagKey: '1', color: 'light-blue', children: 'Douyin', closable: true, },
+        { tagKey: '3', color: 'amber', children: 'Jianying', closable: true, },
+        { tagKey: '3', color: 'violet', children: 'Faceu', closable: true, },
+        { tagKey: '4', color: 'white', children: 'Lark', closable: true, },
+    ];
+
+    const [tagList, setTagList] = useState(defaultList);
+
+    const tagListClick = (value, e, tagKey) => {
+        const newTagList = [...tagList];
+        const closeTagIndex = newTagList.findIndex(t => t.tagKey === tagKey);
+        newTagList.splice(closeTagIndex, 1);
+        setTagList(newTagList);
+    };
+
+    return (
+        <div style={ {
+            backgroundColor: 'var(--semi-color-fill-0)',
+            height: 35,
+            width: 300,
+            display: 'flex',
+            alignItems: 'center',
+            padding: '0 10px',
+            marginBottom: 30,
+        }}>
+            <TagGroup
+                maxTagCount={3}
+                style={ {
+                    display: 'flex',
+                    alignItems: 'center',
+                    width: 350,
+                }}
+                tagList={tagList}
+                size='large'
+                onTagClose={tagListClick}
+            />
+        </div>
+    );
+}
+```
+
 ## API Reference
 
 ### Tag
@@ -254,12 +346,17 @@ import { TagGroup } from '@douyinfe/semi-ui';
 | className | Class name | string |  |  |
 | closable | Toggle whether the tag can be closed | boolean | false |  |
 | color | Color of tags, one of `amber`、 `blue`、 `cyan`、 `green`、 `grey`、 `indigo`、 `light-blue`、 `light-green`、 `lime`、 `orange`、 `pink`、 `purple`、 `red`、 `teal`、 `violet`、 `yellow`、 `white` | string | `grey` |  |
+| prefixIcon | prefix icon | ReactNode | | 2.44.0 |
+| suffixIcon | suffix icon | ReactNode | | 2.44.0 |
+| shape | Shape of tag, one of `square`、 `circle` | string | `square` | 2.20.0 |
 | size | Size, one of `small`, `large` | string | `small` |  |
 | style | Inline style | object |  |  |
 | type | Style type, one of `ghost`, `solid`, `light` | string | `light` |  |
 | visible | Toggle the visibility of the tag | boolean | true |  |
+| tagKey  | The key required by React, as the unique identifier of each tag, does not allow repetition | string | number | |
 | onClick | Callback function when clicking the tag | (e: MouseEvent) => void | - |  |
-| onClose | Callback function when the tag is closed | (tagChildren: ReactNode, e: MouseEvent) => void | - |  |
+| onClose | Callback function when the tag is closed | (tagChildren: ReactNode, e: MouseEvent, tagKey: string \| number ) => void | - | e is available in v1.18, tagKey is available in v2.18.0 |
+
 ### TagGroup
 
 | Properties | Instructions | type | Default | Version |
@@ -272,6 +369,7 @@ import { TagGroup } from '@douyinfe/semi-ui';
 | size | Size, one of `small`, `large` | string | `small` |  |
 | style | Inline style | CSSProperties |  |  |
 | tagList | Label Group data | (TagProps)[] |  |  |
+| onTagClose | The callback function when deleting the Tag in the TagGroup | (tagChildren: ReactNode, e: MouseEvent, tagKey: string \| number ) => void | - |  2.18.0 |
 
 ## Accessibility
 
@@ -286,6 +384,12 @@ import { TagGroup } from '@douyinfe/semi-ui';
    - When the `closable` property is `true`, keyboard users can delete this `Tag` by pressing the `Delete` key
    - When a `Tag` is focused, keyboard users can use the `Esc` key to defocus the currently focused `Tag`
    
+
+## Content Guidelines
+- Due to limited space, label text should be as short as possible
+- avoid line breaks
+- use sentence case
+
 ## Design Tokens
 
 <DesignToken/>

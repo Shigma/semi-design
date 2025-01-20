@@ -1,14 +1,14 @@
 import { isObject, get } from 'lodash';
 import BaseFoundation, { DefaultAdapter } from '../base/foundation';
 import { numbers } from './constants';
-import { throttle } from 'lodash';
 
 export interface CarouselAdapter<P = Record<string, any>, S = Record<string, any>> extends DefaultAdapter<P, S> {
     notifyChange: (activeIndex: number, preIndex: number) => void;
     setNewActiveIndex: (activeIndex: number) => void;
     setPreActiveIndex: (activeIndex: number) => void;
     setIsReverse: (isReverse: boolean) => void;   
-    setIsInit: (isInit: boolean) => void;   
+    setIsInit: (isInit: boolean) => void;
+    getChildren: () => any[]  
 }
 
 class CarouselFoundation<P = Record<string, any>, S = Record<string, any>> extends BaseFoundation<CarouselAdapter<P, S>, P, S> {
@@ -18,6 +18,11 @@ class CarouselFoundation<P = Record<string, any>, S = Record<string, any>> exten
     }
 
     _interval = null;
+    _forcePlay = false;
+
+    setForcePlay(forcePlay: boolean) {
+        this._forcePlay = forcePlay;
+    }
 
     play(interval: number): void {
         if (this._interval) {
@@ -29,7 +34,7 @@ class CarouselFoundation<P = Record<string, any>, S = Record<string, any>> exten
     }
 
     stop(): void {
-        if (this._interval){
+        if (this._interval) {
             clearInterval(this._interval);
         }
     }
@@ -38,7 +43,7 @@ class CarouselFoundation<P = Record<string, any>, S = Record<string, any>> exten
         const { activeIndex: stateActiveIndex } = this.getStates();
         const targetIndex = this.getValidIndex(activeIndex);
         this._adapter.setIsReverse(stateActiveIndex > targetIndex);
-        if (this.getIsControledComponent()) {
+        if (this.getIsControlledComponent()) {
             this._notifyChange(targetIndex);
         } else {
             this._notifyChange(targetIndex);
@@ -47,27 +52,31 @@ class CarouselFoundation<P = Record<string, any>, S = Record<string, any>> exten
     }
 
     next(): void {
+        this.stop();
         const { activeIndex: stateActiveIndex } = this.getStates();
         const targetIndex = this.getValidIndex(stateActiveIndex + 1);
         this._adapter.setIsReverse(false);
-        if (this.getIsControledComponent()) {
+        if (this.getIsControlledComponent()) {
             this._notifyChange(targetIndex);
         } else {
             this._notifyChange(targetIndex);
             this.handleNewActiveIndex(targetIndex);
         }
+        this.handleAutoPlay();
     }
 
     prev(): void {
+        this.stop();
         const { activeIndex: stateActiveIndex } = this.getStates();
         const targetIndex = this.getValidIndex(stateActiveIndex - 1);
         this._adapter.setIsReverse(true);
-        if (this.getIsControledComponent()) {
+        if (this.getIsControlledComponent()) {
             this._notifyChange(targetIndex);
         } else {
             this._notifyChange(targetIndex);
             this.handleNewActiveIndex(targetIndex);
         }
+        this.handleAutoPlay();
     }
 
     destroy(): void {
@@ -84,7 +93,7 @@ class CarouselFoundation<P = Record<string, any>, S = Record<string, any>> exten
 
     _notifyChange(activeIndex: number): void {
         const { activeIndex: stateActiveIndex, isInit } = this.getStates();
-        if (isInit){
+        if (isInit) {
             this._adapter.setIsInit(false);
         }
         if (stateActiveIndex !== activeIndex) {
@@ -94,35 +103,38 @@ class CarouselFoundation<P = Record<string, any>, S = Record<string, any>> exten
     }
 
     getValidIndex(index: number): number {
-        const { children } = this.getStates();
+        const children = this._adapter.getChildren();
         return (index + children.length) % children.length;
     }
 
     getSwitchingTime(): number {
         const { autoPlay, speed } = this.getProps(); 
         const autoPlayType = typeof autoPlay;
-        if (autoPlayType === 'boolean' && autoPlay){
+        if (autoPlayType === 'boolean') { 
             return numbers.DEFAULT_INTERVAL + speed;
         }
-        if (isObject(autoPlay)){
+        if (isObject(autoPlay)) {
             return get(autoPlay, 'interval', numbers.DEFAULT_INTERVAL) + speed;
         }
         return speed;
     }
 
-    getIsControledComponent(): boolean {
+    getIsControlledComponent(): boolean {
         return this._isInProps('activeIndex');
     }
 
     handleAutoPlay(): void { 
         const { autoPlay } = this.getProps(); 
+        const children = this._adapter.getChildren();
         const autoPlayType = typeof autoPlay;
-        if ((autoPlayType === 'boolean' && autoPlay) || isObject(autoPlay)){
+        // when user manually call the play function, force play
+        // only when carousel children length > 1 to start play
+        if (children.length > 1 && ((autoPlay === true) || isObject(autoPlay) || this._forcePlay)) {
             this.play(this.getSwitchingTime());
         }
     }
 
-    handleKeyDown(event: any): void{
+    handleKeyDown(event: any): void {
         if (event.key === 'ArrowLeft') {
             this.prev();
         }
@@ -135,7 +147,7 @@ class CarouselFoundation<P = Record<string, any>, S = Record<string, any>> exten
         const { activeIndex: stateActiveIndex } = this.getStates();
         this._adapter.setIsReverse(stateActiveIndex > activeIndex);
         this._notifyChange(activeIndex);
-        if (!this.getIsControledComponent()) {
+        if (!this.getIsControlledComponent()) {
             this.handleNewActiveIndex(activeIndex);
         }
     }

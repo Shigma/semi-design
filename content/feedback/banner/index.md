@@ -1,6 +1,6 @@
 ---
 localeCode: zh-CN
-order: 63
+order: 81
 category: 反馈类
 title:  Banner 通知横幅
 icon: doc-banner
@@ -29,19 +29,26 @@ import { Banner, Layout, Button } from '@douyinfe/semi-ui';
         setVisible(!visible);
     };
     const { Header, Footer, Content } = Layout;
+
+    const commonStyle = {
+        height: 64,
+        lineHeight: '64px',
+        background: 'var(--semi-color-fill-0)'
+    };
+
     const banner = (
         <Banner 
             onClose={changeVisible}
-            description="A pre-released version is available"
+            description="Semi D2C 现已支持 Figma DevMode, 安装插件，随时查阅图层对应的前端代码"
         />
     );
     return (
         <>
             <Layout className='components-layout-demo banner-basic'>
-                <Header>Header</Header>
+                <Header style={commonStyle}>Header</Header>
                 {visible? banner : null}
-                <Content>Content</Content>
-                <Footer>Footer</Footer>
+                <Content style={{ height: 300, lineHeight: '300px' }}>Content</Content>
+                <Footer style={commonStyle}>Footer</Footer>
             </Layout>
             <Button
                 onClick={changeVisible}
@@ -70,22 +77,22 @@ import { Banner } from '@douyinfe/semi-ui';
     <>
         <Banner 
             type="info"
-            description="A pre-released version is available."
+            description="Semi D2C 现已支持 Figma DevMode, 安装插件，随时查阅图层对应的前端代码"
         />
         <br/>
         <Banner 
             type="warning"
-            description="This version of the document is going to expire after 4 days."
+            description="当前使用 Figma UI Kit 为旧版，可能无法支持完整的 Design to code 能力"
         />
         <br/>
         <Banner 
             type="danger"
-            description="This document was deprecated since Jan 1, 2019."
+            description="当前使用 API 已过期，请尽快升级"
         />
         <br/>
         <Banner 
             type="success"
-            description="You are viewing the latest version of this document."
+            description="Semi DSM, Make Semi Design to Any Design"
         />
     </>
 );
@@ -104,21 +111,21 @@ function Demo() {
     const { Text } = Typography;
   
     return (
-        <div style={{width: 640 }} className="components-banner-demo">
+        <div style={{ width: 640 }} className="components-banner-demo">
             <Banner fullMode={false} type="info" bordered icon={null} closeIcon={null}
-                title={<div style={{fontWeight: 600, fontSize: '14px', lineHeight: '20px'}}>不知道 AppKey？</div>}
+                title={<div style={{ fontWeight: 600, fontSize: '14px', lineHeight: '20px' }}>不知道 AppKey？</div>}
                 description={<div>你可先联系对应的研发同学，确认是否已在 <Text link={{ href: 'https://semi.design/' }}>应用云平台</Text> 申请了应用，并填写对应的信息。</div>}
             /><br/>
             <Banner fullMode={false} type="warning" bordered icon={null} closeIcon={null}
-                title={<div style={{fontWeight: 600, fontSize: '14px', lineHeight: '20px'}}>不知道 AppKey？</div>}
+                title={<div style={{ fontWeight: 600, fontSize: '14px', lineHeight: '20px' }}>不知道 AppKey？</div>}
                 description={<div>你可先联系对应的研发同学，确认是否已在 <Text link={{ href: 'https://semi.design/' }}>应用云平台</Text> 申请了应用，并填写对应的信息。</div>}
             /><br/>
             <Banner fullMode={false} type="danger" bordered icon={null} closeIcon={null}
-                title={<div style={{fontWeight: 600, fontSize: '14px', lineHeight: '20px'}}>不知道 AppKey？</div>}
+                title={<div style={{ fontWeight: 600, fontSize: '14px', lineHeight: '20px' }}>不知道 AppKey？</div>}
                 description={<div>你可先联系对应的研发同学，确认是否已在 <Text link={{ href: 'https://semi.design/' }}>应用云平台</Text> 申请了应用，并填写对应的信息。</div>}
             /><br/>
             <Banner fullMode={false} type="success" bordered icon={null} closeIcon={null}
-                title={<div style={{fontWeight: 600, fontSize: '14px', lineHeight: '20px'}}>不知道 AppKey？</div>}
+                title={<div style={{ fontWeight: 600, fontSize: '14px', lineHeight: '20px' }}>不知道 AppKey？</div>}
                 description={<div>你可先联系对应的研发同学，确认是否已在 <Text link={{ href: 'https://semi.design/' }}>应用云平台</Text> 申请了应用，并填写对应的信息。</div>}
             />
         </div>
@@ -150,7 +157,7 @@ import React from 'react';
 import { Banner } from '@douyinfe/semi-ui';
 
 () => (
-    <div style={{width: 500, padding: 20, border: '1px solid var(--semi-color-border)' }}>
+    <div style={{ width: 500, padding: 20, border: '1px solid var(--semi-color-border)' }}>
         <Banner
             fullMode={false}
             title="Title"
@@ -194,6 +201,18 @@ import { Banner } from '@douyinfe/semi-ui';
 
 - Banner 的关闭按钮可以使用 `Tab` 键聚焦，按钮聚焦后，敲击 `Enter` 键或 `Space` 键可以关闭 banner
 
+## 文案规范
+- 全屏 Banner
+  - 尽量保持内容一行展示完全
+  - 使用正确的标点符号，句子内使用逗号，句子间使用句号
+- 非全屏 Banner
+  - 标题
+    - 使用精简的语言进行说明
+    - 标题上尽量避免使用逗号，句号等标点符号，有且只有是疑问句的时候，支持使用问号结尾
+  - 正文
+    - 在信息传递完整的前提下，尽可能地将正文压缩至 1 -2 句话
+    - 对标题进行详尽地描述或者解释，而不是对标题的重复说明
+    - 使用正确的标点符号，句子内使用逗号，句子间使用句号
 
 ## 设计变量
 <DesignToken/>

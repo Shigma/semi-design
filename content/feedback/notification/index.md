@@ -1,6 +1,6 @@
 ---
 localeCode: zh-CN
-order: 64
+order: 82
 category: 反馈类
 title: Notification 通知
 icon: doc-notification
@@ -123,7 +123,7 @@ import { IconToutiaoLogo, IconVigoLogo } from '@douyinfe/semi-icons';
             ></Button>
             <Button
                 icon={<IconVigoLogo />}
-                onClick={() => Notification.info({ ...opts, icon: <IconVigoLogo style={{ color: 'pink' }} />  })}
+                onClick={() => Notification.info({ ...opts, icon: <IconVigoLogo style={{ color: 'pink' }} /> })}
             ></Button>
         </>
     );
@@ -256,6 +256,41 @@ import { Notification, Button } from '@douyinfe/semi-ui';
 
 ```
 
+
+### 更新内容
+
+可以通过唯一的 id 来更新内容。 >=2.45.0
+
+```jsx live=true
+import React from 'react';
+import { Notification, Button } from '@douyinfe/semi-ui';
+
+() => (
+    <Button
+        onClick={() => {
+            const id = Notification.open({
+                title: 'Hi, Bytedance',
+                content: 'ies dance dance dance',
+                duration: 3,
+            })
+            setTimeout(() => {
+                Notification.open({
+                    title: 'Hi, Bytedance',
+                    content: 'updated',
+                    duration: 10,
+                    id
+                })
+            }, 1000)
+        }
+        }
+    >
+        Display Notification
+    </Button>
+);
+
+
+```
+
 ## API 参考
 
 组件提供的静态方法，使用方式如下：
@@ -272,20 +307,20 @@ import { Notification, Button } from '@douyinfe/semi-ui';
 
 -   `Notification.close(id)`
 
-| 属性 | 说明 | 类型 | 默认值 | 版本 |
-| --- | --- | --- | --- | --- |
-| content | 通知内容 |ReactNode | '' |  |
-| duration | 自动关闭的延时，单位 s，设为 0 时不自动关闭 | number | 3 |  |
-| getPopupContainer | 指定父级 DOM，弹层将会渲染至该 DOM 中，自定义需要设置 `position: relative` | () => HTMLElement | () => document.body | 0.34.0 |
-| icon | 左上角 icon | React.Node |  |  |
+| 属性 | 说明                                                                     | 类型 | 默认值 | 版本 |
+| --- |------------------------------------------------------------------------| --- | --- | --- |
+| content | 通知内容                                                                   |ReactNode | '' |  |
+| duration | 自动关闭的延时，单位 s，设为 0 时不自动关闭                                               | number | 3 |  |
+| getPopupContainer | 指定父级 DOM，弹层将会渲染至该 DOM 中，自定义需要设置 `position: relative` 这会改变浮层 DOM 树位置，但不会改变视图渲染位置。                   | () => HTMLElement | () => document.body | 0.34.0 |
+| icon | 左上角 icon                                                               | React.Node |  |  |
 | position | 弹出位置，可选 `top`、`bottom`、`topLeft`、`topRight`、`bottomLeft`、`bottomRight` | string | `topRight` |  |
-| showClose | 是否展示关闭按钮 | boolean | true | 0.25.0 |
-| theme | 填充样式，支持`light`, `normal` | string | `normal` | 1.0.0 |
-| title | 通知标题 | ReactNode | '' |  |
-| zIndex | 弹层 z-index 值，首次设置一次生效 | number | 1010 |  |
-| onClick | 点击通知的回调函数 | (e: event) => void |  | 0.27.0 |
-| onClose | 通知关闭的回调函数(主动关闭、延时到达关闭都会触发) | () => void |  |  |
-| onCloseClick | 主动点击关闭按钮时的回调函数 | (id: string \| number) => void |  |  |
+| showClose | 是否展示关闭按钮                                                               | boolean | true | 0.25.0 |
+| theme | 填充样式，支持`light`, `normal`                                               | string | `normal` | 1.0.0 |
+| title | 通知标题                                                                   | ReactNode | '' |  |
+| zIndex | 弹层 z-index 值，首次设置一次生效                                                  | number | 1010 |  |
+| onClick | 点击通知的回调函数                                                              | (e: event) => void |  | 0.27.0 |
+| onClose | 通知关闭的回调函数(主动关闭、延时到达关闭都会触发)                                             | () => void |  |  |
+| onCloseClick | 主动点击关闭按钮时的回调函数                                                         | (id: string \| number) => void |  |  |
 
 全局配置在调用前提前配置，全局一次生效 ( >= 0.25.0 )：
 
@@ -310,9 +345,43 @@ import { Notification, Button } from '@douyinfe/semi-ui';
 -  通知的 `aria-labelledby` 标记为对应通知标题
 
 
+## 文案规范
+
+
+<div style={{ border: '1px solid var(--semi-color-border)', padding: 10, marginBottom: 24, justifyContent: 'center', display: 'flex' }}>
+    <NotificationCard
+        type='info'
+        title='Task completed'
+        content={
+            <div>
+                400 tasks succeed and 600 failed
+                <div style={{ color: 'var(--semi-color-primary)', marginTop: 4, fontWeight: 600 }}>Check failed tasks</div>
+            </div>
+        }
+    />
+</div>
+
+- 标题
+  - 使用简洁明了的语言进行说明
+  - 避免使用逗号，句号等标点符号
+- 正文
+  - 在信息传递完整的前提下，尽可能地将正文压缩至 1 -2 句话
+  - 对标题进行详尽地描述或者解释，而不是对标题的重复说明
+  - 使用正确的标点符号，句子内使用逗号，句子间使用句号
+- 操作
+  - 文案需要展示操作的具体含义
+
+
+| ✅ 推荐用法 | ❌ 不推荐用法 |   
+| --- | --- | 
+| <NotificationCard type='info' style={{ width: 350}} title='Task completed' content={<div> 400 tasks succeed and 600 failed <div style={{ color: 'var(--semi-color-primary)', marginTop: 4, fontWeight: 600 }}>Check failed tasks</div></div>} /> | <NotificationCard type='info' style={{ width: 350}} title='Status editing tasks completed' content={<div> 400 tasks succeed and 600 failed <div style={{ color: 'var(--semi-color-primary)', marginTop: 4, fontWeight: 600 }}>Check</div></div>} /> |
+
+
+
 ## 设计变量
 
 <DesignToken/>
+
 
 全局销毁 ( >= 0.25.0 )：
 
